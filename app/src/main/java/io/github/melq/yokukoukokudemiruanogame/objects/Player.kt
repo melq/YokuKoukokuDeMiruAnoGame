@@ -1,4 +1,4 @@
-package io.github.melq.yokukoukokudemiruanogame
+package io.github.melq.yokukoukokudemiruanogame.objects
 
 import android.content.Context
 import android.graphics.Canvas
@@ -20,10 +20,16 @@ class Player(context: Context, private val screenWidth: Float, private val scree
     var allyCount = 1
 
     init {
-        // 初期位置：画面下部中央（例）
+        // 初期位置：画面下部中央
         x = (screenWidth - width) / 2
         y = screenHeight - height - 100 // ※実際は画面高さ等に合わせて調整
         // 必要に応じて、bitmap のリサイズなども行う
+    }
+
+    fun reset() {
+        // 初期位置：画面下部中央
+        x = (screenWidth - width) / 2
+        y = screenHeight - height - 100 // ※実際は画面高さ等に合わせて調整
     }
 
     // update() では、移動した x 座標が画面外に出ないよう補正する例

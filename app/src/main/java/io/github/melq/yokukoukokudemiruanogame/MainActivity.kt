@@ -22,10 +22,9 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 例：DisplayMetricsを使って画面幅を取得
+        // DisplayMetricsを使って画面幅を取得
         val screenWidth = Resources.getSystem().displayMetrics.widthPixels.toFloat()
         val screenHeight = Resources.getSystem().displayMetrics.heightPixels.toFloat()
-        // GameView に screenWidth を渡す（GameView 内で Player インスタンス生成時に利用）
         gameView = GameView(this, screenWidth, screenHeight)
         // GameView をこのアクティビティのコンテンツビューに設定する
         setContentView(gameView)

@@ -5,11 +5,30 @@ import android.graphics.*
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import io.github.melq.yokukoukokudemiruanogame.objects.Bullet
+import io.github.melq.yokukoukokudemiruanogame.objects.Enemy
+import io.github.melq.yokukoukokudemiruanogame.objects.Player
+import io.github.melq.yokukoukokudemiruanogame.objects.PowerUp
 
 class GameView(context: Context, screenWidth: Float, screenHeight: Float) : SurfaceView(context), SurfaceHolder.Callback, Runnable {
     @Volatile
     private var running = false
     private var gameThread: Thread? = null
+
+    enum class GameState {
+        PLAYING, GAME_OVER
+    }
+
+    private var gameState = GameState.PLAYING
+
+    private val textPaint = Paint().apply {
+        color = Color.WHITE
+        textSize = 100f
+        textAlign = Paint.Align.CENTER
+    }
+
+    // リトライボタン領域（例として画面中央下部に配置）
+    private val retryButtonRect = RectF(100f, 800f, 500f, 900f)
 
     // ゲーム内オブジェクト（プレイヤー、敵、パワーアップ、弾など）
     private val player = Player(context, screenWidth, screenHeight)
@@ -52,6 +71,8 @@ class GameView(context: Context, screenWidth: Float, screenHeight: Float) : Surf
     }
 
     private fun update(deltaTime: Float) {
+        // ゲームオーバー時はスキップ
+        if (gameState == GameState.GAME_OVER) return
         // プレイヤー更新（移動状態は onTouchEvent で変更済み）
         player.update(deltaTime)
 
@@ -116,6 +137,16 @@ class GameView(context: Context, screenWidth: Float, screenHeight: Float) : Surf
                 powerUpIterator.remove()
             }
         }
+
+        // プレイヤーと敵の衝突
+        val enemyIterator = enemies.iterator()
+        while (enemyIterator.hasNext()) {
+            val enemy = enemyIterator.next()
+            if (RectF.intersects(enemy.rect, player.rect)) { // 衝突時
+                gameState = GameState.GAME_OVER
+                break
+            }
+        }
     }
 
     private fun drawGame() {
@@ -123,14 +154,20 @@ class GameView(context: Context, screenWidth: Float, screenHeight: Float) : Surf
         if (canvas != null) {
             // 画面クリア（黒で塗りつぶし）
             canvas.drawColor(Color.BLACK)
-            // プレイヤー描画
-            player.draw(canvas)
-            // 敵描画
-            enemies.forEach { it.draw(canvas) }
-            // パワーアップ描画
-            powerUps.forEach { it.draw(canvas) }
-            // 弾描画
-            bullets.forEach { it.draw(canvas) }
+            // PLAYING 状態の場合は通常の描画処理
+            if (gameState == GameState.PLAYING) {
+                player.draw(canvas)
+                enemies.forEach { it.draw(canvas) }
+                powerUps.forEach { it.draw(canvas) }
+                bullets.forEach { it.draw(canvas) }
+            } else if (gameState == GameState.GAME_OVER) {
+                // ゲームオーバー時の描画
+                canvas.drawText("GAME OVER", (width / 2).toFloat(), (height / 2).toFloat(), textPaint)
+                // リトライボタン
+                val buttonPaint = Paint().apply { color = Color.GRAY }
+                canvas.drawRect(retryButtonRect, buttonPaint)
+                canvas.drawText("Retry", retryButtonRect.centerX(), retryButtonRect.centerY() + 35, textPaint)
+            }
             holder.unlockCanvasAndPost(canvas)
         }
     }
@@ -173,7 +210,14 @@ class GameView(context: Context, screenWidth: Float, screenHeight: Float) : Surf
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                touchStartX = event.x
+                if (gameState == GameState.GAME_OVER) {
+                    // タッチ位置がリトライボタン内ならゲーム再開
+                    if (retryButtonRect.contains(event.x, event.y)) {
+                        restartGame()
+                    }
+                } else if (gameState == GameState.PLAYING) {
+                    touchStartX = event.x
+                }
             }
             MotionEvent.ACTION_MOVE -> {
                 val dx = event.x - touchStartX
@@ -182,5 +226,16 @@ class GameView(context: Context, screenWidth: Float, screenHeight: Float) : Surf
             }
         }
         return true
+    }
+
+    private fun restartGame() {
+        // ゲームの各オブジェクトを再初期化する（例：プレイヤー、敵、弾、パワーアップリストをクリアする）
+        enemies.clear()
+        powerUps.clear()
+        bullets.clear()
+        // プレイヤーの位置や状態も初期状態に戻す処理を呼び出す
+        player.reset()  // reset() を実装して初期状態に戻す
+        // ゲーム状態を PLAYING に戻す
+        gameState = GameState.PLAYING
     }
 }
