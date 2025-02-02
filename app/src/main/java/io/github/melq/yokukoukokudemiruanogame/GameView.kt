@@ -168,6 +168,20 @@ class GameView(context: Context, screenWidth: Float, screenHeight: Float) : Surf
                 canvas.drawRect(retryButtonRect, buttonPaint)
                 canvas.drawText("Retry", retryButtonRect.centerX(), retryButtonRect.centerY() + 35, textPaint)
             }
+
+            val playerStatus = player.getStatus()
+            val margin = 20f
+            // 右上に表示するため、テキスト幅を計算して位置調整
+            val textPaint = Paint().apply {
+                color = Color.WHITE
+                textSize = 60f  // テキストサイズを小さく設定
+                textAlign = Paint.Align.LEFT
+            }
+            val statusWidth = textPaint.measureText(playerStatus)
+            val posX = canvas.width - statusWidth - margin
+            val posY = margin * 4 + textPaint.textSize  // 上から margin 分＋テキストサイズ分下げる
+            canvas.drawText(playerStatus, posX, posY, textPaint)
+
             holder.unlockCanvasAndPost(canvas)
         }
     }

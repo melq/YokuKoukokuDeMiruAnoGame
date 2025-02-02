@@ -18,7 +18,7 @@ class PowerUp(context: Context, var x: Float, var y: Float) {
         else -> Type.ALLY
     }
     // 効果の強さ（パラメータで調整可能）
-    val effectRatio = 0.2  // 例：20%アップ
+    val effectRatio = 20  // 例：20%アップ
     val extraCount = 1     // 仲間追加の場合
 
     val rect: RectF

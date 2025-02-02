@@ -30,6 +30,9 @@ class Player(context: Context, private val screenWidth: Float, private val scree
         // 初期位置：画面下部中央
         x = (screenWidth - width) / 2
         y = screenHeight - height - 100 // ※実際は画面高さ等に合わせて調整
+        damageMultiplier = 1.0
+        fireIntervalMultiplier = 1.0
+        allyCount = 1
     }
 
     // update() では、移動した x 座標が画面外に出ないよう補正する例
@@ -63,4 +66,7 @@ class Player(context: Context, private val screenWidth: Float, private val scree
         canvas.drawRect(rect, paint)
     }
 
+    public fun getStatus(): String {
+        return "Damage: ${kotlin.math.round(damageMultiplier * 100)/100},\nFireRate: ${kotlin.math.round(fireIntervalMultiplier * 100)/100},\nAllies: $allyCount"
+    }
 }
